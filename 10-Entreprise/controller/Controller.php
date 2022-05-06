@@ -27,6 +27,8 @@ class Controller
                 $this->select();  // si sélectionne un employé, la méthode select() sera exécutée
             elseif($op == 'delete')
                 $this->delete();  // si supprime un employé, la méthode delete() sera exécutée
+            elseif($op == 'action')
+                $this->selectAllAction();
             else
                 $this->selectAll(); // Dans les autres cas, nous voulons afficher l'ensemble des employés, la méthode selectAll() sera exécutée
 
@@ -55,6 +57,89 @@ class Controller
         // ob_end_flush() va libérer et fait tout apparaître dans le navigateur
         // Envoi les données de la mise en mémoire dans le navigateur
         return ob_end_flush();
+    }
+
+    // Méthode permettant d'afficher tous les employés
+    public function selectAll()
+    {
+        $this->render('layout.php', 'affichage-employes.php', [
+            'title' => 'Affichage de tous les employes',
+            'data' => $this->dbEntityRepository->selectAllEntityRepo(),
+            'fields' => $this->dbEntityRepository->getFields(),
+            'id' => 'id_' . $this->dbEntityRepository->table,
+            'message' => "Ci-dessous vous trouverez un tableau contenant l'ensemble des employés de l'entreprise"
+        ]);
+    }
+
+    public function selectAllAction()
+    {
+        $id = isset($_GET['id']) ? $_GET['id'] : NULL;
+        $this->render('layout.php', 'affichage-employes.php', [
+            'title' => 'Affichage de tous les employes',
+            'data' => $this->dbEntityRepository->selectAllEntityRepo(),
+            'fields' => $this->dbEntityRepository->getFields(),
+            'id' => 'id_' . $this->dbEntityRepository->table,
+            'message' => "Ci-dessous vous trouverez un tableau contenant l'ensemble des employés de l'entreprise",
+            'alert' => "✅ L'action sur l'employé n°$id à été effectuer avec succès !"
+        ]);
+
+    }
+
+    // Méthode permettant de selectionner et d'afficher le détail d'un employé
+    public function select()
+    {
+        $id = isset($_GET['id']) ? $_GET['id'] : NULL;
+        
+        $this->render('layout.php', 'detail-employe.php', [
+            'title' => "Affichage du détail d'un employé",
+            'data' => $this->dbEntityRepository->selectEntityRepo($id),
+            'id' => 'id_' . $this->dbEntityRepository->table,
+            'message' => "Ci-dessous vous trouverez le détail de l'employé n°$id"
+        ]);
+    }
+
+    // Méthode permettant de supprimer un employé
+    public function delete()
+    {
+        $id = isset($_GET['id']) ? $_GET['id'] : NULL;
+        $res = $this->dbEntityRepository->deleteEntityRepo($id);
+
+        $this->render('layout.php', 'affichage-employes.php', [
+            'title' => "Affichage de tous les employés",
+            'data' => $this->dbEntityRepository->selectAllEntityRepo(),
+            'fields' => $this->dbEntityRepository->getFields(),
+            'id' => 'id_' . $this->dbEntityRepository->table,
+            'message' => "Ci-dessous vous trouverez un tableau contenant l'ensemble des employés de l'entreprise",
+            'alert' => "✅ L'employé n°$id à bien été supprimer de la base de données de l'entreprise"
+        ]);
+
+    }
+
+    // Methode permettant de faire une redirection
+    public function redirect($location)
+    {
+        header('Location: ' . $location);
+    }
+
+    // Méthode permettant d'enregistrer un employé
+    public function save($op)
+    {
+        $id = isset($_GET['id']) ? $_GET['id'] : NULL;
+        $values = ($op == 'update') ? $this->dbEntityRepository->selectEntityRepo($id) : '';
+
+        if($_POST)
+        {
+            $res = $this->dbEntityRepository->saveEntityRepo();
+            $this->redirect("?op=action&id=$id");
+        }
+
+        $this->render('layout.php', 'contact-form.php', [
+            'title' => "Formulaire",
+            'op' => $op,
+            'fields' => $this->dbEntityRepository->getFields(),
+            'values' => $values,
+            'message' => "Ci-dessous vous trouverez le formualire pour ajouter ou modifier un employé" 
+        ]);
     }
 
 }
