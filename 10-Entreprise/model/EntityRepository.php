@@ -41,7 +41,20 @@ class EntityRepository
         // print_r($this->db);
         return $this->db;
     }
+
+    // Méthode permettant de sélectionner l'ensemble des employes dans la table "employes"
+    public function selectAllEntityRepo()
+    {
+        // $data(réponse de la BDD = PDOStatement) = PDO->query(reqête SQL)
+        $data = $this->getDb()->query("SELECT * FROM " . $this->table);
+        // $r (résultat traité par la méthode fetchAll() avec un mode FETCH_ASSOC)
+        $r = $data->fetchAll(\PDO::FETCH_ASSOC);
+        return $r;
+    }
+
 }
+
+
 
 // TEST
 
